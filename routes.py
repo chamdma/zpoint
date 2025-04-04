@@ -1,10 +1,24 @@
 from fastapi import APIRouter,Request,Body
 from models import ZPointCollection
-from utils import get_current_user 
+from utils import decode_jwt_token, create_access_token
 from datetime import datetime
 import database
 
 router=APIRouter()
+
+
+@router.post("/auth/token")
+async def generate_token():
+    token = create_access_token({"user": "user123"}) 
+    return {
+        "status": True,
+        "status_code": 200,
+        "description": "Token generated successfully",
+        "token": token
+    }
+
+
+
 
 @router.post("/zpoint/set/create")
 async def create_zpoint(
@@ -69,4 +83,53 @@ async def create_zpoint(
             "description": f"Error creating point collection: {str(e)}",
             "data": [],
             "error": str(e),
+        }
+
+
+@router.post("/zpoints/set/list")
+async def list_zpoint(
+    request: Request,
+    user_id: str = Body("", embed=True)  
+):
+    try:
+       
+        token = request.headers.get("Authorization", "").replace("Bearer ", "")
+        payload = decode_jwt_token(token)
+        
+        print("Decoded Payload:", payload)
+
+
+    
+
+       
+        point_sets = ZPointCollection.objects(status=True)
+
+      
+        data = [
+            {
+                "point_set_name": point.point_set_name,
+                "price": point.price,
+                "points": point.points,
+                "image": point.image,
+                "is_adjustable": point.is_adjustable,
+                "created_at": point.created_at.isoformat(timespec='seconds') + "Z",
+                "updated_at": point.updated_at.isoformat(timespec='seconds') + "Z",
+                "status": point.status
+            }
+            for point in point_sets
+        ]
+
+        return {
+            "status": True,
+            "status_code": 200,
+            "description": "Point collection list fetched successfully",
+            "data": data
+        }
+
+    except Exception as e:
+        return {
+            "status": False,
+            "status_code": 500,
+            "description": f"Error fetching point collection: {str(e)}",
+            "data": []
         }

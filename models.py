@@ -15,3 +15,4 @@ class ZPointCollection(Document):
     image = StringField(default="https://default-image-url.com")
     is_adjustable=BooleanField(required=True)
     status=BooleanField(default=True)
+    
