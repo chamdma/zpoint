@@ -1,21 +1,23 @@
 import jwt
-from datetime import datetime, timedelta
+from fastapi import Request
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import HTTPException, status, Depends
 
-SECRET_KEY = "chandana2003"  
-ALGORITHM = "HS256"
+SECRET_KEY = "chandana2003"
+security = HTTPBearer()
 
-def create_access_token(data: dict, expires_delta: timedelta = timedelta(days=1)):
-    to_encode = data.copy()
-    expire = datetime.utcnow() + expires_delta
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+def create_access_token(data: dict):
+
+    return jwt.encode(data, SECRET_KEY, algorithm="HS256")
 
 def decode_jwt_token(token: str):
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        return payload
+        return jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
     except jwt.ExpiredSignatureError:
-        return None
+        raise HTTPException(status_code=401, detail="Token expired")
     except jwt.InvalidTokenError:
-        return None
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+def jwt_bearer_auth(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    return decode_jwt_token(credentials.credentials)
+

@@ -1,21 +1,11 @@
-from fastapi import APIRouter,Request,Body
+from fastapi import APIRouter,Request,Body,Depends
 from models import ZPointCollection
-from utils import decode_jwt_token, create_access_token
+from utils import  jwt_bearer_auth
+
 from datetime import datetime
 import database
 
 router=APIRouter()
-
-
-@router.post("/auth/token")
-async def generate_token():
-    token = create_access_token({"user": "user123"}) 
-    return {
-        "status": True,
-        "status_code": 200,
-        "description": "Token generated successfully",
-        "token": token
-    }
 
 
 
@@ -23,6 +13,7 @@ async def generate_token():
 @router.post("/zpoint/set/create")
 async def create_zpoint(
     request:Request,
+    token_data: dict = Depends(jwt_bearer_auth),
     point_set_name:str=Body(...),
     price: float=Body(...),
     points: int=Body(...),
@@ -89,18 +80,10 @@ async def create_zpoint(
 @router.post("/zpoints/set/list")
 async def list_zpoint(
     request: Request,
+    token_data: dict = Depends(jwt_bearer_auth),
     user_id: str = Body("", embed=True)  
 ):
     try:
-       
-        token = request.headers.get("Authorization", "").replace("Bearer ", "")
-        payload = decode_jwt_token(token)
-        
-        print("Decoded Payload:", payload)
-
-
-    
-
        
         point_sets = ZPointCollection.objects(status=True)
 
