@@ -13,7 +13,7 @@ router=APIRouter()
 
 
 @router.post("/zpoint/set/create")
-async def create_zpoint(
+async def create_point(
     request:Request,
     token_data: dict = Depends(jwt_bearer_auth),
     point_set_name:str=Body(...),
@@ -80,7 +80,7 @@ async def create_zpoint(
 
 
 @router.post("/zpoints/set/list")
-async def list_zpoint(
+async def list_point(
     request: Request,
     token_data: dict = Depends(jwt_bearer_auth),
     user_id: str = Body("", embed=True)  
@@ -117,4 +117,50 @@ async def list_zpoint(
             "status_code": 500,
             "description": f"Error fetching point collection: {str(e)}",
             "data": []
+        }
+    
+
+@router.post("/zpoint/set/edit")
+async def edit_point(
+    request:Request,
+    token_data: dict = Depends(jwt_bearer_auth),
+    id:str=Body("",embed=True),
+    point_set_name:str=Body(...),
+    price:float=Body(...),
+    points:int=Body(...),
+    is_adjustable:bool=Body(...)
+):
+    try:
+        point_set=ZPointCollection.objects(point_set_name=point_set_name).first()
+
+
+        point_set.point_set_name=point_set_name
+        point_set.price = price
+        point_set.points=points
+        point_set.is_adjustable=is_adjustable
+
+        point_set.save()
+
+
+        response_data={
+            "id": str(point_set.id),
+            "point_set_name":str(point_set.point_set_name),
+            "price":float(point_set.price),
+            "points":int(point_set.points),
+            "is_adjustable":bool(point_set.is_adjustable)    
+            }
+        return {
+            "status": True,
+            "status_code": 200,
+            "description": "Point collection edited successfully",
+            "data": [response_data]
+        }
+
+    except Exception as e:
+        return {
+            "status": False,
+            "status_code": 500,
+            "description": f"Error editing point collection: {str(e)}",
+            "data": [],
+            "error": str(e)
         }
