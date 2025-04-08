@@ -1,14 +1,19 @@
-import jwt
-from fastapi import Request
+from jose import jwt
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from fastapi import HTTPException, status, Depends
+from fastapi import HTTPException,Depends
+from datetime import datetime, timedelta
 
 SECRET_KEY = "chandana2003"
+ALGORITHM = "HS256"
 security = HTTPBearer()
 
-def create_access_token(data: dict):
+def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes=30)):
 
-    return jwt.encode(data, SECRET_KEY, algorithm="HS256")
+
+    to_encode = data.copy()
+    expire = datetime.utcnow() + expires_delta
+    to_encode["exp"] = expire
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 def decode_jwt_token(token: str):
     try:

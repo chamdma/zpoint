@@ -1,9 +1,11 @@
 from fastapi import APIRouter,Request,Body,Depends
-from models import ZPointCollection
+from models.zpoint_model import ZPointCollection
+
+
 from utils import  jwt_bearer_auth
 
 from datetime import datetime
-import database
+
 
 router=APIRouter()
 
