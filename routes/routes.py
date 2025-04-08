@@ -2,6 +2,8 @@ from fastapi import APIRouter,Request,Body,Depends
 from models.zpoint_model import ZPointCollection
 
 
+
+
 from utils import  jwt_bearer_auth
 
 from datetime import datetime
@@ -15,11 +17,11 @@ router=APIRouter()
 @router.post("/zpoint/set/create")
 async def create_point(
     request:Request,
-    token_data: dict = Depends(jwt_bearer_auth),
     point_set_name:str=Body(...),
     price: float=Body(...),
     points: int=Body(...),
-    is_adjustable:bool=Body(...)
+    is_adjustable:bool=Body(...),
+    image:str=Body(...)
                         
                         
                         
@@ -27,7 +29,7 @@ async def create_point(
                         
                         
 ):
-    image = "https://default-image-url.com"
+    
     status = True
     created_at = datetime.now()
     updated_at = datetime.now()
@@ -57,6 +59,8 @@ async def create_point(
 
         new_point_set.save()
 
+
+
         point_data = new_point_set.to_mongo()
         point_data.pop("_id", None)  
         point_data["created_at"] = point_data["created_at"].isoformat(timespec='seconds') + "Z"
@@ -77,6 +81,25 @@ async def create_point(
             "data": [],
             "error": str(e),
         }
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 @router.post("/zpoints/set/list")
